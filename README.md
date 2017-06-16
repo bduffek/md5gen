@@ -10,5 +10,5 @@ md5gen.exe -listbare PathToInput PathToOutput
 
 To suppress messages add: -quiet
 
-Constructed by referencing https://stackoverflow.com/questions/10520048/calculate-md5-checksum-for-a-file
-Improved referencing http://blog.monogram.sk/pokojny/2011/09/25/calculating-hash-while-processing-stream/
+Constructed by referencing https://stackoverflow.com/questions/10520048/calculate-md5-checksum-for-a-file  
+Improved referencing http://blog.monogram.sk/pokojny/2011/09/25/calculating-hash-while-processing-stream/  

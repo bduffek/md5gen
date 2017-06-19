@@ -124,7 +124,7 @@ namespace md5gen
                                 lngSizeHolder = 0;
                             }
 
-                            if ((!boolQuiet && (((lngTally & 511) == 511)) || (lngTotalLines < 511) || (lngSizeHolder > 20971520)))
+                            if ((!boolQuiet && (((lngTally & 255) == 255)) || (lngTotalLines < 255) || (lngSizeHolder > 10485760)))
                             {
                                 Console.WriteLine($"Processing List: {lngTally}/{lngTotalLines}");
                             }
@@ -141,9 +141,9 @@ namespace md5gen
                     Console.WriteLine("Invalid arguments.");
                 }
             }
-            catch
+            catch (Exception Ex)
             {
-                Console.WriteLine("Something went wrong using the specified arguments.");
+                Console.WriteLine("Something went wrong using the specified arguments. - Exception: " + Ex.Message.Replace('\r', ' ').Replace('\n', ' '));
             }
         }
 
@@ -161,36 +161,59 @@ namespace md5gen
                 {
                     int byteCount;
                     byte[] data = new byte[4096];
+                    string strPath = string.Empty;
+                    string strName = string.Empty;
+                    decimal decPosition = 0;
+                    string strPosition = string.Empty;
+                    decimal decSize = 0;
+                    string strSize = string.Empty;
+                    string strPercent = string.Empty;
+
+                    decSize = ((decimal)streamFile.Length);
+
+                    if (decSize > 33554432)
+                    {
+                        strPath = Path.GetDirectoryName(streamFile.Name); 
+                        strName = Path.GetFileName(streamFile.Name);
+                        decPosition = 0;
+                        strPosition = "0";
+                        strSize = (decSize / 1048576).ToString("0");
+                        strPercent = "0";
+
+                        ProgressUpdate(strPath, strName, strPosition, strSize, strPercent);
+
+                    }
                     while ((byteCount = cs.Read(data, 0, data.Length)) > 0)
                     {
                         if (!boolBeQuiet && (((streamFile.Position - 1) & 67108863) == 67108863))
                         {
-                            Console.WriteLine("MD5 Hash Progress (" + Path.GetFileName(streamFile.Name) + "): " +
-                                             ((decimal)streamFile.Position/1048576).ToString("0") + "/" +
-                                             ((decimal)streamFile.Length/1048576).ToString("0") + "MB " +
-                                             (100 * ((decimal)streamFile.Position/(decimal)streamFile.Length)).ToString("0.00") +
-                                             "% ~ Location: " + Path.GetDirectoryName(streamFile.Name));
+                            decPosition = streamFile.Position;
+                            strPosition = (decPosition / 1048576).ToString("0");
+                            strPercent = (100 * (decPosition / decSize)).ToString("0.00");
+
+                            ProgressUpdate(strPath, strName, strPosition, strSize, strPercent);
                         }
                     }
 
                     if (!boolBeQuiet && (streamFile.Length > 67108863))
                     {
-                        Console.WriteLine("MD5 Hash Progress (" + Path.GetFileName(streamFile.Name) + "): " +
-                                         ((decimal)streamFile.Position / 1048576).ToString("0") + "/" +
-                                         ((decimal)streamFile.Length / 1048576).ToString("0") + "MB " +
-                                         (100 * ((decimal)streamFile.Position / (decimal)streamFile.Length)).ToString("0.00") +
-                                         "% ~ Location: " + Path.GetDirectoryName(streamFile.Name));
+                        ProgressUpdate(strPath, strName, strSize, strSize, "100");
                     }
 
                     byte[] bytMD5 = md5.Hash;
 
                     return BitConverter.ToString(bytMD5).Replace("-", String.Empty).ToLower();
                 }
-            }
-            catch
+        }
+            catch (Exception Ex)
             {
-                return "UnableToRead";
+                return "UnableToRead - Exception: " + Ex.Message.Replace('\r', ' ').Replace('\n', ' ');
             }
+        }
+
+        static public void ProgressUpdate(string strPath, string strName, string strPosition, string strSize, string strPercent)
+        {
+            Console.WriteLine("MD5 Hash Progress (" + strPercent + "%): " + strPosition + "/" + strSize + "MB " + strName + " ~ Location: " + strPath);
         }
     }
 }

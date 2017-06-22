@@ -18,10 +18,9 @@ namespace md5gen
 {
     class Program
     {
-
         static void Main(string[] args)
         {
-            //Examining arguments
+            //Examining arguments and setting default values
             bool boolQuiet = false;
             bool boolList = false;
             bool boolListBare = false;

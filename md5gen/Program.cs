@@ -58,7 +58,7 @@ namespace md5gen
                                 tsDelay = TimeSpan.FromSeconds(dblTemp);
                             }
                         }
-                        else if ((strInputPath.Length == 0) && boolList)
+                        else if (strInputPath.Length == 0)
                         {
                             strInputPath = strCurrentArg;
                         }

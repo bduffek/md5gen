@@ -8,7 +8,11 @@ md5gen.exe -list PathToInput PathToOutput
 To do the same but only include the MD5s:
 md5gen.exe -listbare PathToInput PathToOutput
 
-To suppress messages add: -quiet
+To set frequency of status updates add (where seconds need not be whole, default 0.1):
+-updatefrequency=seconds
+
+To suppress messages add:
+-quiet
 
 Constructed by referencing https://stackoverflow.com/questions/10520048/calculate-md5-checksum-for-a-file  
 Improved referencing http://blog.monogram.sk/pokojny/2011/09/25/calculating-hash-while-processing-stream/  

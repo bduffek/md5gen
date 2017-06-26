@@ -50,10 +50,10 @@ namespace md5gen
                         break;
 
                     default:
-                        if ((strTemp.Length > 17) && (strTemp.Substring(0,17) == "-updatefrequency=")) 
+                        if ((strTemp.Length > 17) && (strTemp.Substring(0, 17) == "-updatefrequency="))
                         {
                             Double.TryParse(strTemp.Substring(17, (strTemp.Length - 17)), out double dblTemp);
-                            if (dblTemp > 0) 
+                            if (dblTemp > 0)
                             {
                                 tsDelay = TimeSpan.FromSeconds(dblTemp);
                             }
@@ -93,13 +93,19 @@ namespace md5gen
                     string strTempMD5;
                     string strTempLineWrite;
 
-                    using (StreamReader strReader = new StreamReader(strInputPath))
-                    using (StreamWriter strWriter = new StreamWriter(strOutputPath))
+                    //No StreamWriter constructor accepts a path while specifying encoding, hence the nested "new FileStream..." here
+                    //Learned from https://stackoverflow.com/a/8151412
+                    //Without Unicode, many possible file paths will not be processed correctly.  Redirected cmd output when cmd is opened with /u is unicode.
+                    //A dir command redirected to a file for output without cmd being opened with /u initially will not accuratedly record file paths with some characters.
+                    //Actual typed or pasted input to a cmd console doesn't seem to require the cmd being opened with /u.
+                    using (StreamReader strReader = new StreamReader(strInputPath, Encoding.Unicode))
+                    using (StreamWriter strWriter = new StreamWriter(new FileStream(strOutputPath, FileMode.CreateNew), Encoding.Unicode))
                     {
+
                         Stopwatch stpMain = new Stopwatch();
                         TimeSpan tsCheck = new TimeSpan();
                         stpMain.Start();
-                        
+
                         long lngTally = 0;
                         long lngTotalLines = File.ReadLines(strInputPath).Count();
                         int intCursorStart;
@@ -109,9 +115,9 @@ namespace md5gen
                         }
                         else
                         {
-                            intCursorStart = -1; 
+                            intCursorStart = -1;
                         }
-                        
+
                         while (strReader.EndOfStream == false)
                         {
                             strTempLineRead = strReader.ReadLine();
@@ -129,11 +135,11 @@ namespace md5gen
                                 strTempLineWrite = "";
                             }
                             else
-                            { 
-                                strTempMD5  = GetMD5(strTempLineRead, tsDelay, boolQuiet, lngTally, lngTotalLines, intCursorStart);
+                            {
+                                strTempMD5 = GetMD5(strTempLineRead, tsDelay, boolQuiet, lngTally, lngTotalLines, intCursorStart);
                                 if (boolListBare == true)
                                 {
-                                    strTempLineWrite = strTempMD5; 
+                                    strTempLineWrite = strTempMD5;
                                 }
                                 else
                                 {
@@ -141,7 +147,7 @@ namespace md5gen
                                 }
                             }
                             strWriter.WriteLine(strTempLineWrite);
-                           
+
 
 
                         }
@@ -166,14 +172,14 @@ namespace md5gen
         }
 
         //Function to return hexadecimal MD5 hash
-        static public string GetMD5(string strInputPath, TimeSpan tsDelay, bool boolBeQuiet = false, long lngTally=0, long lngTotalLines = 0, int intTallyCurStart = -1)
+        static public string GetMD5(string strInputPath, TimeSpan tsDelay, bool boolBeQuiet = false, long lngTally = 0, long lngTotalLines = 0, int intTallyCurStart = -1)
         {
             try
             {
                 //Utilizing block method since it's impossible to display progress on large files otherwise.
                 //"using" here lets the compiler definitively know to dispose of the objects used when out of scope.
                 //FileShare.ReadWrite is very important so other programs are not blocked from what they were doing with their files.
-                using (FileStream streamFile = File.Open(strInputPath,FileMode.Open,FileAccess.Read,FileShare.ReadWrite))
+                using (FileStream streamFile = File.Open(strInputPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
                 using (MD5 md5 = MD5.Create())
                 using (CryptoStream cs = new CryptoStream(streamFile, md5, CryptoStreamMode.Read))
                 {
@@ -198,7 +204,7 @@ namespace md5gen
 
                     decSize = ((decimal)streamFile.Length);
 
-                    strPath = Path.GetDirectoryName(streamFile.Name); 
+                    strPath = Path.GetDirectoryName(streamFile.Name);
                     strName = Path.GetFileName(streamFile.Name);
                     decPosition = 0;
                     strPosition = "0";
@@ -209,7 +215,7 @@ namespace md5gen
 
                     while ((byteCount = cs.Read(data, 0, data.Length)) > 0)
                     {
-                        
+
                         if (!boolBeQuiet && ((stpMD5.Elapsed - tsMD5Check) >= tsDelay))
                         {
                             decPosition = streamFile.Position;
@@ -255,7 +261,7 @@ namespace md5gen
 
                     return BitConverter.ToString(bytMD5).Replace("-", String.Empty).ToLower();
                 }
-        }
+            }
             catch (Exception Ex)
             {
                 return "UnableToRead - Exception: " + Ex.Message.Replace('\r', ' ').Replace('\n', ' ');
@@ -286,4 +292,3 @@ namespace md5gen
 
     }
 }
-
